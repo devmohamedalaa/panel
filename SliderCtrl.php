@@ -40,11 +40,18 @@ class SliderCtrl extends Controller
     public function store(Request $request)
     {
         //
-        $this->validate($request,['img'=>'required'],Slider::$ruels);
+        $this->validate($request,['img'=>'required'],['img.required'=>'يجب ادخال الصورة']);
         $slider = new Slider();
         $imgName = rand(11111,99999).'_'.$request->img->getClientOriginalName();
         $request->img->move('admin/slider', $imgName);
         $slider->img = $imgName;
+
+        $slider->title_ar = $request->title_ar;
+        $slider->title_en = $request->title_en;
+        
+        $slider->desc_ar = $request->desc_ar;
+        $slider->desc_en = $request->desc_en;
+
         $slider->save();
         return redirect('admin/sliders')->with('success','تمت الاضافة بنجاح');
     }
@@ -83,12 +90,24 @@ class SliderCtrl extends Controller
     public function update(Request $request, $id)
     {
         //
-        $this->validate($request,['img'=>'required'],Slider::$ruels);
+        // dd($request->all());
         $sliders = Slider::find($id);
-        \File::delete('admin/slider/'.$sliders->img);
-        $imgName = rand(11111,99999).'_'.$request->img->getClientOriginalName();
-        $request->img->move('admin/slider', $imgName);
-        $sliders->img = $imgName;
+        if ($request->hasFile('img')) {
+            \File::delete('admin/slider/'.$sliders->img);
+            $imgName = rand(11111,99999).'_'.$request->img->getClientOriginalName();
+            $request->img->move('admin/slider', $imgName);
+            $sliders->img = $imgName;
+            // return 'fds';
+        }else{
+            $sliders->img = $sliders->img;
+        }
+
+        $sliders->title_ar = $request->title_ar;
+        $sliders->title_en = $request->title_en;
+        
+        $sliders->desc_ar = $request->desc_ar;
+        $sliders->desc_en = $request->desc_en;
+
         $sliders->save();
         return back()->with('success','تم التعديل بنجاح');
     }

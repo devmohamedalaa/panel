@@ -5,31 +5,33 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
-
-class AdminCtrl extends Controller
+use App\Category;
+use App\SubCat;
+class SubCatCtrl extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($id)
     {
         //
+        $category = Category::select('id','name_ar')->findOrFail($id);
+        $subCat = SubCat::select('id','name_ar')->where('cat_id',$id)->get();
+        return view('admin.category.subCat.index',compact('category','subCat'));
     }
 
-    public function dashboard()
-    {
-        return view('admin.dashboard');
-    }
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create($id)
     {
         //
+        $category = Category::select('id','name_ar')->findOrFail($id);
+        return view('admin.category.subCat.create',compact('category','id'));
     }
 
     /**
@@ -38,9 +40,27 @@ class AdminCtrl extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request,$cat_id)
     {
         //
+        $this->validate($request,[
+            'name_ar'=>'required',
+            'name_en'=>'required',
+            'cat_id'=>'requried',
+        ],[
+            'name_ar.required'=>'يجب ادخال الاسم بالعربية',
+            'name_en.required'=>'يجب ادخال الاسم بالانجليزية',
+            'cat_id.required'=>'يجب اختيار القسم الرئيسي'
+        ]);
+
+        $subCat = new SubCat();
+        $subCat->name_ar = $request->name_ar;
+        $subCat->name_en = $request->name_en;
+        $subCat->cat_id  = $cat_id;
+        $subCat->save();
+        $request->session()->flash('success','تمت اضافة قسم بنجاح');
+        return redirect('admin/subCat/'.$cat_id);
+
     }
 
     /**
@@ -86,28 +106,5 @@ class AdminCtrl extends Controller
     public function destroy($id)
     {
         //
-    }
-
-    public function showLoginForm()
-    {
-        return view('admin.auth.login');
-    }
-
-    public function login(Request $request)
-    {
-        $auth = auth()->guard('admin');
-        if ($auth->attempt(['email' => $request->email, 'password' => $request->password])) {
-            return redirect()->intended('admin/dashboard');
-        }else{
-            $error =  'يجب التاكد من البينت المدخلة';
-            return view('admin.auth.login',compact('error'));
-        }
-    }
-
-    public function logout()
-    {
-        $auth = auth()->guard('admin');
-        $auth->logout();
-        return redirect()->intended('admin/dashboard');
     }
 }
