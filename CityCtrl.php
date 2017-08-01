@@ -40,15 +40,17 @@ class CityCtrl extends Controller
     public function store(Request $request)
     {
         //
-        // return $request->all();
-        $this->validate($request,['name'=>'required'],['name.required'=>'يجب ادخال اسم المدينة']);
-
-        if ($request->has('status')) {
-            $request->merge(['status'=>1]);
-        }
-        City::create($request->all());
-        $request->session()->flash('success', 'تمت الاصافة بنجاح');
-        return back();
+        // dd($request->all());
+        $this->validate($request,[
+            'name'=>'required',
+            ],[
+                'name.required'=>'يجب ادخال الاسم ',
+            ]);
+        $city = new City();
+        $city->name = $request->name;
+        $city->save();
+        $request->session()->flash('success','تمت اضافة بنجاح');
+        return redirect('admin/city');
     }
 
     /**
@@ -61,7 +63,6 @@ class CityCtrl extends Controller
     {
         //
         return view('admin.city.show',compact('city'));
-
     }
 
     /**
@@ -83,17 +84,17 @@ class CityCtrl extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request,City $city)
+    public function update(Request $request, City $city)
     {
         //
-        // return $request->all();
-        if ($request->has('status')) {
-            $request->merge(['status'=>1]);
-        }else{
-            $request->merge(['status'=>0]);
-        }
-        $city->update($request->all());
-        $request->session()->flash('success', 'تم التعديل بنجاح');
+        $this->validate($request,[
+            'name'=>'required',
+            ],[
+                'name.required'=>'يجب ادخال الاسم',
+            ]);
+        $city->name = $request->name;
+        $city->save();
+        $request->session()->flash('success','تم التعديل بنجاح');
         return back();
     }
 
@@ -108,5 +109,6 @@ class CityCtrl extends Controller
         //
         $city->delete();
         return back();
+
     }
 }
